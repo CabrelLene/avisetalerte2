@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Avis et alertes - Ville de Montréal" />
+    <meta name="theme-color" content="#ffffff" />
+    
+    <!-- Polices de caractères -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Manifest pour PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/logo192.png" />
+
+    <title>Avis et alertes | Ville de Montréal</title>
+
+    <style>
+      /* Styles critiques initiaux */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Roboto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      #root {
+        min-height: 100vh;
+      }
+
+      /* Styles pour le chargement initial */
+      .loading-spinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+      }
+
+      /* Style pour masquer le flash de contenu non stylé */
+      .js-loading * {
+        visibility: hidden;
+      }
+
+      .js-loading .loading-spinner {
+        visibility: visible;
+      }
+    </style>
+
+    <!-- Script pour gérer le chargement initial -->
+    <script>
+      document.documentElement.classList.add('js-loading');
+      window.addEventListener('load', () => {
+        document.documentElement.classList.remove('js-loading');
+      });
+    </script>
+  </head>
+  <body>
+    <div id="root">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Fallback pour les navigateurs sans JavaScript -->
+    <noscript>
+      <div style="padding: 20px; text-align: center;">
+        <h1>JavaScript est requis</h1>
+        <p>Pour utiliser cette application, veuillez activer JavaScript dans votre navigateur.</p>
+      </div>
+    </noscript>
+
+    <!-- Script principal -->
+    <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Scripts pour PWA -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+              console.log('SW registered:', registration);
+            })
+            .catch(registrationError => {
+              console.log('SW registration failed:', registrationError);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>
