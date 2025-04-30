@@ -4,110 +4,139 @@ import { setFilters, clearFilters } from '../store/alertsSlice';
 
 function Filters() {
   const dispatch = useDispatch();
-  const activeFilters = useSelector(state => state.alerts.activeFilters);
+  const { districts, subjects, dateDebut, dateFin } = useSelector(state => state.alerts.activeFilters);
 
-  const handleFilterChange = (type, value) => {
-    dispatch(setFilters({ [type]: value }));
+  // On définit la liste de valeurs possibles
+  const allDistricts = [
+    'Ville-Marie',
+    'Le Plateau-Mont-Royal',
+    'Rosemont',
+    'Sud-Ouest',
+    'Côte-des-Neiges',
+    'Outremont'
+  ];
+  const allSubjects = [
+    'Travaux',
+    'Services',
+    'Circulation',
+    'Environnement',
+    'Événements',
+    'Installations'
+  ];
+
+  // Gérer le clic sur une case à cocher (arrondissement)
+  const handleDistrictCheck = (district) => {
+    let newDistricts = [...districts];
+    if (newDistricts.includes(district)) {
+      // si déjà présent, on retire
+      newDistricts = newDistricts.filter(d => d !== district);
+    } else {
+      // sinon on ajoute
+      newDistricts.push(district);
+    }
+    dispatch(setFilters({ districts: newDistricts }));
   };
 
-  const districts = [
-    "Ville-Marie",
-    "Le Plateau-Mont-Royal",
-    "Rosemont",
-    "Sud-Ouest",
-    "Côte-des-Neiges",
-    "Outremont"
-  ];
+  // Pour les sujets
+  const handleSubjectCheck = (subject) => {
+    let newSubjects = [...subjects];
+    if (newSubjects.includes(subject)) {
+      newSubjects = newSubjects.filter(s => s !== subject);
+    } else {
+      newSubjects.push(subject);
+    }
+    dispatch(setFilters({ subjects: newSubjects }));
+  };
 
-  const subjects = [
-    "Travaux",
-    "Services",
-    "Circulation",
-    "Environnement",
-    "Événements",
-    "Installations"
-  ];
+  // Gérer les dates
+  const handleDateChange = (name, value) => {
+    dispatch(setFilters({ [name]: value }));
+  };
 
-  const renderFilter = (label, name, value, options) => (
-    <div style={{ marginBottom: '1rem' }}>
-      <label style={{
-        display: 'block',
-        marginBottom: '0.5rem',
-        color: '#666666',
-        fontSize: '0.875rem'
-      }}>
-        {label}
-      </label>
-      <select
-        value={value}
-        onChange={(e) => handleFilterChange(name, e.target.value)}
-        style={{
-          width: '100%',
-          padding: '0.75rem',
-          border: '1px solid #e0e0e0',
-          borderRadius: '4px',
-          fontSize: '1rem',
-          color: '#242424',
-          backgroundColor: 'white'
-        }}
-      >
-        <option value="">Tous</option>
-        {options.map(option => (
-          <option key={option} value={option}>{option}</option>
-        ))}
-      </select>
-    </div>
-  );
+  const hasActiveFilter = 
+    districts.length > 0 ||
+    subjects.length > 0 ||
+    dateDebut ||
+    dateFin;
 
   return (
     <div style={{ marginTop: '1.5rem' }}>
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gridTemplateColumns: '1fr 1fr',
         gap: '1rem'
       }}>
-        {renderFilter('Arrondissement', 'district', activeFilters.district, districts)}
-        {renderFilter('Sujet', 'subject', activeFilters.subject, subjects)}
-        
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{
-            display: 'block',
-            marginBottom: '0.5rem',
-            color: '#666666',
-            fontSize: '0.875rem'
-          }}>
-            Période
-          </label>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <input
-              type="date"
-              value={activeFilters.dateDebut}
-              onChange={(e) => handleFilterChange('dateDebut', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #e0e0e0',
-                borderRadius: '4px',
-                fontSize: '1rem'
-              }}
-            />
-            <input
-              type="date"
-              value={activeFilters.dateFin}
-              onChange={(e) => handleFilterChange('dateFin', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #e0e0e0',
-                borderRadius: '4px',
-                fontSize: '1rem'
-              }}
-            />
-          </div>
+        <div style={{ background: 'white', padding: '1rem', borderRadius: '4px' }}>
+          <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Arrondissements</p>
+          {allDistricts.map((d) => (
+            <div key={d} style={{ marginBottom: '0.25rem' }}>
+              <input
+                type="checkbox"
+                checked={districts.includes(d)}
+                onChange={() => handleDistrictCheck(d)}
+                id={`dist-${d}`}
+              />
+              <label htmlFor={`dist-${d}`} style={{ marginLeft: '0.5rem' }}>
+                {d}
+              </label>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ background: 'white', padding: '1rem', borderRadius: '4px' }}>
+          <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Sujets</p>
+          {allSubjects.map((s) => (
+            <div key={s} style={{ marginBottom: '0.25rem' }}>
+              <input
+                type="checkbox"
+                checked={subjects.includes(s)}
+                onChange={() => handleSubjectCheck(s)}
+                id={`sub-${s}`}
+              />
+              <label htmlFor={`sub-${s}`} style={{ marginLeft: '0.5rem' }}>
+                {s}
+              </label>
+            </div>
+          ))}
         </div>
       </div>
 
-      {Object.values(activeFilters).some(value => value) && (
+      <div style={{
+        marginTop: '1rem',
+        background: 'white',
+        padding: '1rem',
+        borderRadius: '4px'
+      }}>
+        <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Période</p>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <input
+            type="text"
+            placeholder="Date début (AAAA-MM-JJ)"
+            value={dateDebut}
+            onChange={(e) => handleDateChange('dateDebut', e.target.value)}
+            style={{
+              flex: 1,
+              padding: '0.5rem',
+              borderRadius: '4px',
+              border: '1px solid #ccc'
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Date fin (AAAA-MM-JJ)"
+            value={dateFin}
+            onChange={(e) => handleDateChange('dateFin', e.target.value)}
+            style={{
+              flex: 1,
+              padding: '0.5rem',
+              borderRadius: '4px',
+              border: '1px solid #ccc'
+            }}
+          />
+        </div>
+      </div>
+
+      {hasActiveFilter && (
         <button
           onClick={() => dispatch(clearFilters())}
           style={{
@@ -120,7 +149,7 @@ function Filters() {
             cursor: 'pointer'
           }}
         >
-          Effacer les filtres
+          Tout effacer
         </button>
       )}
     </div>

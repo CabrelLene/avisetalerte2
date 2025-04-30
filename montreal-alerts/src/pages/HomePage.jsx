@@ -1,24 +1,39 @@
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAlerts } from '../store/alertsSlice'; // Import du thunk
 import SearchBar from '../components/SearchBar';
 import Filters from '../components/Filters';
+import { Link } from 'react-router-dom';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 
 function HomePage() {
-  const alerts = useSelector(state => state.alerts.filteredItems);
-  const [showMore, setShowMore] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  
-  // Nombre d'alertes à afficher initialement
+  const dispatch = useDispatch();
+  const { filteredItems, status, error } = useSelector(state => state.alerts);
+  const [showMore, setShowMore] = React.useState(false);
+  const [openSnackbar, setOpenSnackbar] = React.useState(false);
+
   const initialDisplayCount = 5;
-  const displayedAlerts = showMore ? alerts : alerts.slice(0, initialDisplayCount);
+  const displayedAlerts = showMore ? filteredItems : filteredItems.slice(0, initialDisplayCount);
+
+  useEffect(() => {
+    // Lors du montage, on va chercher les données
+    if (status === 'idle') {
+      dispatch(fetchAlerts());
+    }
+  }, [status, dispatch]);
 
   const handleSubscribe = () => {
     setOpenSnackbar(true);
   };
+
+  if (status === 'loading') {
+    return <div>Chargement des alertes...</div>;
+  }
+  if (status === 'failed') {
+    return <div>Erreur: {error}</div>;
+  }
 
   return (
     <div style={{ backgroundColor: '#f7f7f7', minHeight: '100vh' }}>
@@ -32,25 +47,13 @@ function HomePage() {
           margin: '0 auto',
           padding: '0 1.5rem'
         }}>
-          <h1 style={{
-            fontSize: '2rem',
-            marginBottom: '1rem'
-          }}>Avis et alertes</h1>
+          <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>
+            Avis et alertes
+          </h1>
           
           <button
             onClick={handleSubscribe}
             className="mtl-subscribe-button"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              backgroundColor: '#0033a0',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              padding: '0.75rem 1.5rem',
-              cursor: 'pointer',
-              fontSize: '1rem'
-            }}
           >
             <NotificationsIcon style={{ marginRight: '0.5rem' }} />
             M'abonner aux alertes
@@ -81,11 +84,7 @@ function HomePage() {
                 backgroundColor: 'white',
                 borderRadius: '4px',
                 padding: '1.5rem',
-                border: '1px solid #e0e0e0',
-                transition: 'transform 0.2s',
-                ':hover': {
-                  transform: 'translateY(-2px)'
-                }
+                border: '1px solid #e0e0e0'
               }}>
                 <div style={{
                   display: 'flex',
@@ -101,7 +100,6 @@ function HomePage() {
                   </time>
                   <span className="mtl-tag">{alert.district}</span>
                 </div>
-                
                 <h2 style={{
                   fontSize: '1.25rem',
                   color: '#0033a0',
@@ -109,13 +107,12 @@ function HomePage() {
                 }}>
                   {alert.title}
                 </h2>
-                
                 <span className="mtl-tag">{alert.subject}</span>
               </article>
             </Link>
           ))}
 
-          {alerts.length > initialDisplayCount && !showMore && (
+          {filteredItems.length > initialDisplayCount && !showMore && (
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>
               <button
                 onClick={() => setShowMore(true)}
